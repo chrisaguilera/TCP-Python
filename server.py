@@ -1,5 +1,6 @@
 import socket
 import sys
+import time
 
 # Create a TCP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,18 +19,23 @@ while True:
 	connection, client_address = sock.accept()
 
 	try: 
-		print >> sys.stderr, 'Server: connection from', client_address
+		print >> sys.stderr, 'Server: connection from % s port %s' % client_address
 
+		message = ""
 		# Receive the data
 		while True:
 			data = connection.recv(16)
-			print >> sys.stderr, 'received "%s"' % data
+			time.sleep(1)
+			print >> sys.stderr, 'Server: received "%s"' % data
 			if data: 
 				print >> sys.stderr, 'Server: sending data back to the client'
-				connection.sendall(data)
+				message += data.upper()
+				connection.sendall(data.upper())
 			else: 
-				print >> sys.stderr, 'Server: no more data from %s' % client_address
+				print >> sys.stderr, 'Server: no more data from %s port %s' % client_address
+				print >> sys.stderr, 'Server: complete message is %s' % message
 				break
 	finally:
 		# Clean up the connection
+		print >> sys.stderr, "Server: closing the connection"
 		connection.close()

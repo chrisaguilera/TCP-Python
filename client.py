@@ -1,5 +1,6 @@
 import socket
 import sys
+import time
 
 # Create a TCP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -11,9 +12,11 @@ sock.connect(server_address)
 
 try:
 	# Send data
-	message = "This is a message. It will be echoed back from the server."
-	print >> sys.stderr, "Client: sending %s" % message
+	message = 'This is a message. It will be echoed back from the server.'
+	print >> sys.stderr, 'Client: sending "%s"' % message
 	sock.sendall(message)
+
+	# time.sleep(10)
 
 	# Wait for the response
 	amount_received = 0
@@ -22,8 +25,9 @@ try:
 	while amount_received < amount_expected: 
 		data = sock.recv(16)
 		amount_received += len(data)
-		print >> sys.stderr, 'Client: received %s' % data
+		print >> sys.stderr, 'Client: received "%s"' % data
 
 finally:
-	print >> sys.stderr, 'Client: closing the socket'
+	print >> sys.stderr, 'Client: closing the socket in 10 seconds'
+	time.sleep(10)
 	sock.close()
