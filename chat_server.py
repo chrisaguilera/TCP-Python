@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
 	server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-	server_address = 'localhost'
+	server_address = str(socket.gethostname())
 	server_port = 2222
 
 	print("Server address: %s:%s" % (server_address, str(server_port)))
