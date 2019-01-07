@@ -49,7 +49,7 @@ s.listen(10)
 
 while True:
 
-	print("Server is listening for more clients...")
+	print("Server is listening for clients...")
 	conn, client_address = s.accept()
 
 	print("Connected with client " + client_address[0] + ": " + str(client_address[1]))
