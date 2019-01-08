@@ -1,13 +1,14 @@
 import socket
+import sys
 import threading
 
-def client_thread(client_connection, client_address):
+def handle_client_thread(client_connection, client_address):
 
 	new_user = True
 
 	username = ''
 
-	welcome_message = "Welcome to the server... Enter your username: \n"
+	welcome_message = "Welcome to the server... Enter your username:"
 	
 	client_connection.sendall(welcome_message.encode())
 
@@ -16,7 +17,7 @@ def client_thread(client_connection, client_address):
 		while 1:
 
 			data = client_connection.recv(1024)
-			received_message = data.decode().rstrip()
+			received_message = data.decode()
 
 			if not data:
 				print("Lost connection to client %s:%s unexpectedly" % (client_address[0], str(client_address[1])))
@@ -31,7 +32,7 @@ def client_thread(client_connection, client_address):
 					break
 				else:
 					print("Message from %s: %s" % (username, received_message))
-					response_message = received_message.upper() + '\n'
+					response_message = received_message.upper()
 					client_connection.sendall(response_message.encode())
 
 	finally:
@@ -45,21 +46,27 @@ if __name__ == "__main__":
 
 	server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-	server_address = str(socket.gethostname())
-	server_port = 2222
+	server_ip_address = str(socket.gethostname())
+	server_port = 2223
 
-	print("Server address: %s:%s" % (server_address, str(server_port)))
+	print("Server address: %s:%s" % (server_ip_address, str(server_port)))
 
-	server_socket.bind((server_address, server_port))
+	server_socket.bind((server_ip_address, server_port))
 
 	server_socket.listen(5)
 
-	while 1:
-		print("Server is waiting for clients...")
-		
-		client_connection, client_address = server_socket.accept()
+	try:
 
-		print("Connected to client with address %s:%s" % (client_address[0], str(client_address[1])))
+		while 1:
+			print("Server is waiting for clients...")
+			
+			client_connection, client_address = server_socket.accept()
 
-		threading.Thread(target = client_thread, args = (client_connection, client_address, )).start()
+			print("Connected to client with address %s:%s" % (client_address[0], str(client_address[1])))
+
+			threading.Thread(target = handle_client_thread, args = (client_connection, client_address, )).start()
+	
+	finally:
+		print("Closing server_socket")
+		server_socket.close()
 
