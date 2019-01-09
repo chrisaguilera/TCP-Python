@@ -1,21 +1,31 @@
 import socket
 import sys
 import threading
+import errno
+
+client_running = True
 
 def listening_thread(client_socket):
-	try:
-		while 1:
+
+	global client_running
+
+	while client_running:
+		
+		try:
+
 			data = client_socket.recv(1024)
+
 			if not data:
 				print("Lost connection to server")
-				break
-			
-			received_message = data.decode()
-			print('Server: ' + received_message)
-	finally:
-		print("Closing socket from listening_thread")
-		client_socket.close()
+				client_running = False
 
+			else:
+				received_message = data.decode()
+				print('Server: ' + received_message)
+
+		except:
+			print("Disconnected from server")
+			client_running = False
 
 if __name__ == "__main__":
 
@@ -36,26 +46,32 @@ if __name__ == "__main__":
 		print("Connection refused")
 		sys.exit()
 
-	try:
+	threading.Thread(target = listening_thread, args = (client_socket, )).start()
 
-		threading.Thread(target = listening_thread, args = (client_socket, )).start()
+	while client_running:
 
-		while 1:
-			client_input = input()
+		client_input = input()
+
+		try:
 			if client_input == 'quit':
-				quit_message = "Client %s requesting to close connection" % client_ip_address
-				client_socket.sendall(quit_message.encode())
-				break
 
-			client_socket.sendall(client_input.encode())
-	
-	except IOError as e:
-		if e.errno == errno.EPIPE:
-			print("EPIPE Error")
+				print("Sending 'quit' message to server")
+				client_socket.sendall(client_input.encode())
 
-	except socket.error as e:
-		print("Socket Error")
+				client_running = False
 
-	finally:
-		print("Closing socket from main_thread")
-		client_socket.close()
+			else:
+				client_socket.sendall(client_input.encode())
+
+		except IOError as e:
+			if e.errno == errno.EPIPE:
+				print("EPIPE Error")
+			break
+
+		except socket.error as e:
+			print("Socket Error")
+
+			break
+
+	print("Closing socket from main_thread")
+	client_socket.close()
