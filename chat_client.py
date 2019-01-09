@@ -21,7 +21,7 @@ def listening_thread(client_socket):
 
 			else:
 				received_message = data.decode()
-				print('Server: ' + received_message)
+				print('<<' + received_message)
 
 		except:
 			print("Disconnected from server")

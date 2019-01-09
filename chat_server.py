@@ -4,6 +4,10 @@ import threading
 
 # Close all client sockets when the server_socket is closed
 
+clients_dict = {}
+username_ip_dict = {}
+ip_client_dict = {}
+
 def handle_client_thread(client_connection, client_address):
 
 	client_connected = True
@@ -26,15 +30,24 @@ def handle_client_thread(client_connection, client_address):
 			else:
 				if new_user:
 					username = received_message
-					print("New user: %s" % username)
+					clients_dict[username] = client_connection
 					new_user = False
+					print("New user: %s" % username)
 				elif received_message == 'quit':
-					print("Client %s:%s has requested to close connection" % (client_address[0], str(client_address[1])))
 					client_connected = False
+					print("Client %s:%s has requested to close connection" % (client_address[0], str(client_address[1])))
 				else:
 					print("Message from %s: %s" % (username, received_message))
-					response_message = received_message.upper()
-					client_connection.sendall(response_message.encode())
+					valid_user = False
+					for name in clients_dict.keys():
+						if ('>>' + name + ':') in received_message:
+							valid_user = True
+							chat_message = received_message.replace('>>' + name + ':', username + ':')
+							clients_dict.get(name).sendall(chat_message.encode())
+
+					if not valid_user:
+						response_message = "Not a valid message"
+						client_connection.sendall(response_message.encode())
 
 	except:
 		print("An error occurred wiith client %s:%s" % (client_address[0], client_address[1]))
